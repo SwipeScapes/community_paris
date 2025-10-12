@@ -1,6 +1,4 @@
 streamlit
-datetime
-random
 pandas
 numpy
-foliums
+folium
