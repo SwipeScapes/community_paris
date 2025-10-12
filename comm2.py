@@ -1,18 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Oct 12 20:16:50 2025
-
-@author: pavan
-"""
-
 import streamlit as st
 import random
 
 # --- Page config ---
 st.set_page_config(page_title="Travel Community", layout="wide")
 
-# --- Dummy profile images (emojis for demo) ---
+# --- Dummy profile images ---
 profile_pics = {
     "Alice": "👩‍🦱",
     "Bob": "👨‍🦰",
@@ -27,13 +19,13 @@ def random_timestamp():
     hours_ago = random.choice([2, 5, 12, 24, 48])
     return f"{hours_ago}h ago" if hours_ago < 24 else f"{hours_ago//24}d ago"
 
-# --- Initialize posts and banner state ---
+# --- Initialize posts ---
 if "paris_posts" not in st.session_state:
     st.session_state.paris_posts = [
         {"user": "Alice", "content": "Loved the hidden café near Montmartre! Their croissants are amazing. ☕🥐",
          "type": "gem", "likes": 12, "useful": 8, "not_useful": 1,
          "comments": ["So true! Must visit."], "time": random_timestamp()},
-        {"user": "Bob", "content": "Beware of pickpockets near the Eiffel Tower and Trocadéro 😬. Keep your bag close!",
+        {"user": "Bob", "content": "Beware of pickpockets near the Eiffel Tower 😬. Keep your bag close!",
          "type": "scam", "likes": 34, "useful": 25, "not_useful": 3,
          "comments": ["Thanks for the warning!"], "time": random_timestamp()},
         {"user": "Clara", "content": "The Seine boat tour at sunset is magical ✨. Book tickets online to avoid long queues.",
@@ -59,23 +51,21 @@ if "banner_closed_paris" not in st.session_state:
 if "banner_closed_bangkok" not in st.session_state:
     st.session_state.banner_closed_bangkok = False
 
-# --- Sidebar with countdown ---
+# --- Sidebar ---
 st.sidebar.title("🧳 Travel Countdown")
 days_left = 13
 destination = st.sidebar.radio("Select your destination", ["Paris", "Bangkok"])
 
-# --- POP-UP AD BANNER FUNCTION ---
+# --- Banner ---
 def travel_reminder(destination, days_left):
     banner_closed = st.session_state.banner_closed_paris if destination == "Paris" else st.session_state.banner_closed_bangkok
-    
     if not banner_closed:
-        if destination == "Paris":
-            temp_range = "10°C to 18°C"
-            packing = "light jacket, sweater, comfortable shoes, umbrella, and sunglasses"
-        else:
-            temp_range = "28°C to 35°C"
-            packing = "light cotton clothes, sandals, sunhat, sunscreen, and umbrella for showers"
-
+        temp_range = "10°C to 18°C" if destination == "Paris" else "28°C to 35°C"
+        packing = (
+            "light jacket, sweater, comfortable shoes, umbrella, and sunglasses"
+            if destination == "Paris"
+            else "light cotton clothes, sandals, sunhat, sunscreen, and umbrella for showers"
+        )
         st.markdown(f"""
         <style>
         .popup-banner {{
@@ -103,7 +93,6 @@ def travel_reminder(destination, days_left):
             to {{ opacity: 0; transform: translate(-50%, -50%) scale(0.9); }}
         }}
         </style>
-
         <div class="popup-banner" id="travelBanner">
             <div class="banner-content">
                 <h3>⏰ {days_left} days left for your trip to {destination}!</h3>
@@ -111,7 +100,6 @@ def travel_reminder(destination, days_left):
                 <p>🧳 Suggested Packing: {packing}</p>
             </div>
         </div>
-
         <script>
         setTimeout(function() {{
             var banner = document.getElementById('travelBanner');
@@ -122,16 +110,14 @@ def travel_reminder(destination, days_left):
         </script>
         """, unsafe_allow_html=True)
 
-        # Mark as closed (so it doesn’t show again)
         if destination == "Paris":
             st.session_state.banner_closed_paris = True
         else:
             st.session_state.banner_closed_bangkok = True
 
-# Call the reminder function
 travel_reminder(destination, days_left)
 
-# --- Post card function ---
+# --- Display posts ---
 def display_posts(posts, destination):
     for idx, post in enumerate(posts):
         bg = "#fefefe" if post["type"]=="gem" else "#fff0f0" if post["type"]=="scam" else "#f0f8ff" 
@@ -169,18 +155,17 @@ def display_posts(posts, destination):
         post_key_prefix = 'paris_posts' if destination=='Paris' else 'bkk_posts'
 
         def update_post_count(count_key, index):
-            st.session_state.get(post_key_prefix)[index][count_key] += 1
-            st.experimental_rerun()
+            st.session_state[post_key_prefix][index][count_key] += 1
 
         with col1:
-            st.button(f"❤️ {post['likes']}", key=f"like_{idx}_{destination}",
-                      on_click=update_post_count, args=("likes", idx))
+            if st.button(f"❤️ {post['likes']}", key=f"like_{idx}_{destination}"):
+                update_post_count("likes", idx)
         with col2:
-            st.button(f"👍 {post['useful']}", key=f"useful_{idx}_{destination}",
-                      on_click=update_post_count, args=("useful", idx))
+            if st.button(f"👍 {post['useful']}", key=f"useful_{idx}_{destination}"):
+                update_post_count("useful", idx)
         with col3:
-            st.button(f"👎 {post['not_useful']}", key=f"notuseful_{idx}_{destination}",
-                      on_click=update_post_count, args=("not_useful", idx))
+            if st.button(f"👎 {post['not_useful']}", key=f"notuseful_{idx}_{destination}"):
+                update_post_count("not_useful", idx)
         with col4:
             st.write(f"💬 {len(post['comments'])} comments")
 
@@ -188,7 +173,6 @@ def display_posts(posts, destination):
         if new_comment:
             posts[idx]["comments"].append(new_comment)
             st.session_state[f"comment_{idx}_{destination}"] = ""
-            st.experimental_rerun()
 
         if post["comments"]:
             for c in post["comments"]:
