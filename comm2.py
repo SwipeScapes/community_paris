@@ -66,50 +66,8 @@ def travel_reminder(destination, days_left):
             if destination == "Paris"
             else "light cotton clothes, sandals, sunhat, sunscreen, and umbrella for showers"
         )
-        st.markdown(f"""
-        <style>
-        .popup-banner {{
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 550px;
-            max-width: 90%;
-            z-index: 9999;
-            border-radius: 12px;
-            background: linear-gradient(90deg, #FFDEE9 0%, #B5FFFC 100%);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-            padding: 30px;
-            font-family: 'Segoe UI', sans-serif;
-            color: black;
-            animation: fadeIn 0.5s ease-in, fadeOut 0.5s ease-out 4.5s forwards;
-        }}
-        @keyframes fadeIn {{
-            from {{ opacity: 0; transform: translate(-50%, -50%) scale(0.9); }}
-            to {{ opacity: 1; transform: translate(-50%, -50%) scale(1); }}
-        }}
-        @keyframes fadeOut {{
-            from {{ opacity: 1; transform: translate(-50%, -50%) scale(1); }}
-            to {{ opacity: 0; transform: translate(-50%, -50%) scale(0.9); }}
-        }}
-        </style>
-        <div class="popup-banner" id="travelBanner">
-            <div class="banner-content">
-                <h3>⏰ {days_left} days left for your trip to {destination}!</h3>
-                <p>🌤️ Expected Temperatures: <b>{temp_range}</b></p>
-                <p>🧳 Suggested Packing: {packing}</p>
-            </div>
-        </div>
-        <script>
-        setTimeout(function() {{
-            var banner = document.getElementById('travelBanner');
-            if (banner) {{
-                banner.style.display = 'none';
-            }}
-        }}, 5000);
-        </script>
-        """, unsafe_allow_html=True)
-
+        st.info(f"⏰ {days_left} days left for {destination}! 🌤️ {temp_range} 🧳 Pack: {packing}")
+        
         if destination == "Paris":
             st.session_state.banner_closed_paris = True
         else:
