@@ -7,6 +7,7 @@ st.set_page_config(page_title="Flight Booking - BLR to Paris", layout="wide")
 st.title("✈️ Flights: Bangalore → Paris")
 st.markdown("Travel Dates: **April 3 → April 16**")
 st.markdown("Traveler Type: **Family**")
+
 # --- Sample Flight Data (Multiple Carriers) ---
 flight_itineraries = [
     {
@@ -76,33 +77,42 @@ st.subheader("Available Flights")
 st.markdown("Recommended options are highlighted for your convenience.")
 
 for idx, flight in enumerate(flight_itineraries):
-    highlight = "border:3px solid #00aaff; background-color:#e6f7ff;" if flight["recommended"] else "border:1px solid #ccc; background-color:#f9f9f9;"
+    # Use Streamlit columns and markdown instead of HTML
+    col1, col2 = st.columns([1, 10])
     
-    st.markdown(f"""
-    <div style="border-radius:12px; padding:15px; margin-bottom:15px; {highlight}">
-        <h3 style="color:#0066cc;">{flight['carrier']}</h3>
-        <p style="color:#0066cc;">
-            <b>Departure:</b> {flight['departure']} &nbsp;&nbsp;
-            <b>Arrival:</b> {flight['arrival']} &nbsp;&nbsp;
-            <b>Duration:</b> {flight['duration']}
-        </p>
-        <p style="color:#0066cc;">
-            <b>Return Departure:</b> {flight['return_dep']} &nbsp;&nbsp;
-            <b>Return Arrival:</b> {flight['return_arr']}
-        </p>
-        <p style="color:#0066cc;"><b>Cost:</b> ₹{flight['cost']}</p>
-        <p style="color:#0066cc;">
-            <b>Cancellation Rate:</b> {flight['cancellation']} &nbsp;&nbsp;
-            <b>Delay Risk:</b> {flight['delays']}
-        </p>
-        <p style="color:#0066cc;">
-            <b>Audience:</b> {flight['audience']} &nbsp;&nbsp;
-            <b>Family Rating:</b> {flight['rating']}%
-        </p>
-        {"<p style='color:#ff0000;'><b>Recommended:</b> ⭐ This flight is suggested for you</p>" if flight["recommended"] else ""}
-        {"<p style='color:#0000cc;'><b>Rationale:</b> "+flight['reason']+"</p>" if flight["recommended"] else ""}
-    </div>
-    """, unsafe_allow_html=True)
+    with col1:
+        if flight["recommended"]:
+            st.write("⭐")
+    
+    with col2:
+        if flight["recommended"]:
+            st.info(f"**{flight['carrier']}** (Recommended)")
+        else:
+            st.write(f"**{flight['carrier']}**")
+    
+    # Outbound flight details
+    st.write(f"**Outbound:** {flight['departure']} → {flight['arrival']} ({flight['duration']})")
+    
+    # Return flight details
+    st.write(f"**Return:** {flight['return_dep']} → {flight['return_arr']}")
+    
+    # Cost and stats
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Cost", f"₹{flight['cost']}")
+    with col2:
+        st.metric("Cancellation", flight['cancellation'])
+    with col3:
+        st.metric("Delay Risk", flight['delays'])
+    with col4:
+        st.metric("Family Rating", f"{flight['rating']}%")
+    
+    # Additional info
+    st.write(f"👥 **For:** {flight['audience']}")
+    
+    if flight["recommended"]:
+        st.success(f"✅ {flight['reason']}")
+    
+    st.divider()
 
-st.markdown("---")
 st.caption("⚠️ Note: Timings, costs, cancellation rates, and ratings are simulated for demo purposes.")
