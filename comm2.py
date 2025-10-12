@@ -1,10 +1,11 @@
 import streamlit as st
+from datetime import datetime
 import random
 
 # --- Page config ---
 st.set_page_config(page_title="Travel Community", layout="wide")
 
-# --- Dummy profile images ---
+# --- Dummy profile images (emojis for demo) ---
 profile_pics = {
     "Alice": "👩‍🦱",
     "Bob": "👨‍🦰",
@@ -19,13 +20,13 @@ def random_timestamp():
     hours_ago = random.choice([2, 5, 12, 24, 48])
     return f"{hours_ago}h ago" if hours_ago < 24 else f"{hours_ago//24}d ago"
 
-# --- Initialize posts ---
+# --- Initialize posts and banner state ---
 if "paris_posts" not in st.session_state:
     st.session_state.paris_posts = [
         {"user": "Alice", "content": "Loved the hidden café near Montmartre! Their croissants are amazing. ☕🥐",
          "type": "gem", "likes": 12, "useful": 8, "not_useful": 1,
          "comments": ["So true! Must visit."], "time": random_timestamp()},
-        {"user": "Bob", "content": "Beware of pickpockets near the Eiffel Tower 😬. Keep your bag close!",
+        {"user": "Bob", "content": "Beware of pickpockets near the Eiffel Tower and Trocadéro 😬. Keep your bag close!",
          "type": "scam", "likes": 34, "useful": 25, "not_useful": 3,
          "comments": ["Thanks for the warning!"], "time": random_timestamp()},
         {"user": "Clara", "content": "The Seine boat tour at sunset is magical ✨. Book tickets online to avoid long queues.",
@@ -41,41 +42,63 @@ if "bkk_posts" not in st.session_state:
         {"user": "Eva", "content": "Tuk-tuks near Asoke and Sukhumvit are expensive 💸. Grab or metered taxis are better.",
          "type": "scam", "likes": 40, "useful": 30, "not_useful": 2,
          "comments": ["Good to know, thanks!"], "time": random_timestamp()},
-        {"user": "Frank", "content": "Hidden rooftop bar in Sukhumvit is amazing 🍹. Great view at sunset!",
+        {"user": "Frank", "content": "Hidden rooftop bar in Sukhumvit is amazing 🹹. Great view at sunset!",
          "type": "gem", "likes": 25, "useful": 20, "not_useful": 1,
          "comments": ["Adding this to my list!"], "time": random_timestamp()},
     ]
 
+# Initialize state for the banner visibility - track per destination
 if "banner_closed_paris" not in st.session_state:
     st.session_state.banner_closed_paris = False
 if "banner_closed_bangkok" not in st.session_state:
     st.session_state.banner_closed_bangkok = False
 
-# --- Sidebar ---
+# --- Sidebar with countdown ---
 st.sidebar.title("🧳 Travel Countdown")
 days_left = 13
 destination = st.sidebar.radio("Select your destination", ["Paris", "Bangkok"])
 
-# --- Banner ---
+# --- POP-UP AD BANNER FUNCTION ---
 def travel_reminder(destination, days_left):
+    # Check if banner was closed for this destination
     banner_closed = st.session_state.banner_closed_paris if destination == "Paris" else st.session_state.banner_closed_bangkok
+    
     if not banner_closed:
-        temp_range = "10°C to 18°C" if destination == "Paris" else "28°C to 35°C"
-        packing = (
-            "light jacket, sweater, comfortable shoes, umbrella, and sunglasses"
-            if destination == "Paris"
-            else "light cotton clothes, sandals, sunhat, sunscreen, and umbrella for showers"
-        )
-        st.info(f"⏰ {days_left} days left for {destination}! 🌤️ {temp_range} 🧳 Pack: {packing}")
-        
         if destination == "Paris":
-            st.session_state.banner_closed_paris = True
-        else:
-            st.session_state.banner_closed_bangkok = True
+            temp_range = "10°C to 18°C"
+            packing = "light jacket, sweater, comfortable shoes, umbrella, and sunglasses"
+        else:  # Bangkok
+            temp_range = "28°C to 35°C"
+            packing = "light cotton clothes, sandals, sunhat, sunscreen, and umbrella for showers"
+        
+        col1, col2 = st.columns([20, 1])
+        with col1:
+            st.markdown(f"""
+            <div style="
+                border-left: 5px solid #FF6B6B;
+                border-radius: 5px;
+                background-color: #FFF5F5;
+                padding: 15px;
+                margin-bottom: 20px;
+            ">
+                <h3 style="margin-top: 0;">⏰ {days_left} days left for your trip to {destination}!</h3>
+                <p><b>🌤️ Expected Temperatures:</b> {temp_range}</p>
+                <p><b>🧳 Suggested Packing:</b> {packing}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            if st.button("✕", key=f"close_banner_{destination}"):
+                if destination == "Paris":
+                    st.session_state.banner_closed_paris = True
+                else:
+                    st.session_state.banner_closed_bangkok = True
+                st.rerun()
 
+# Call the reminder function
 travel_reminder(destination, days_left)
 
-# --- Display posts ---
+# --- Post card function ---
 def display_posts(posts, destination):
     for idx, post in enumerate(posts):
         bg = "#fefefe" if post["type"]=="gem" else "#fff0f0" if post["type"]=="scam" else "#f0f8ff" 
@@ -113,17 +136,18 @@ def display_posts(posts, destination):
         post_key_prefix = 'paris_posts' if destination=='Paris' else 'bkk_posts'
 
         def update_post_count(count_key, index):
-            st.session_state[post_key_prefix][index][count_key] += 1
+            st.session_state.get(post_key_prefix)[index][count_key] += 1
+            st.rerun()
 
         with col1:
-            if st.button(f"❤️ {post['likes']}", key=f"like_{idx}_{destination}"):
-                update_post_count("likes", idx)
+            st.button(f"❤️ {post['likes']}", key=f"like_{idx}_{destination}",
+                      on_click=update_post_count, args=("likes", idx))
         with col2:
-            if st.button(f"👍 {post['useful']}", key=f"useful_{idx}_{destination}"):
-                update_post_count("useful", idx)
+            st.button(f"👍 {post['useful']}", key=f"useful_{idx}_{destination}",
+                      on_click=update_post_count, args=("useful", idx))
         with col3:
-            if st.button(f"👎 {post['not_useful']}", key=f"notuseful_{idx}_{destination}"):
-                update_post_count("not_useful", idx)
+            st.button(f"👎 {post['not_useful']}", key=f"notuseful_{idx}_{destination}",
+                      on_click=update_post_count, args=("not_useful", idx))
         with col4:
             st.write(f"💬 {len(post['comments'])} comments")
 
@@ -131,6 +155,7 @@ def display_posts(posts, destination):
         if new_comment:
             posts[idx]["comments"].append(new_comment)
             st.session_state[f"comment_{idx}_{destination}"] = ""
+            st.rerun()
 
         if post["comments"]:
             for c in post["comments"]:
