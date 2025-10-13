@@ -1,6 +1,7 @@
 import streamlit as st
 import time
 from pathlib import Path
+from PIL import Image
 
 st.set_page_config(page_title="SwipeScapes - Bangkok", layout="wide")
 st.title("🇹🇭 SwipeScapes - Discover Bangkok Attractions")
@@ -130,18 +131,25 @@ else:
         # Display attraction card and photo
         with st.container(border=True):
             
-            # Image with cache buster
-            image_placeholder = st.empty()
             current_photo_path = place["photos"][current_photo_index]
             
             # Check if image file exists
             if current_photo_path.exists():
-                with image_placeholder:
+                try:
+                    img = Image.open(current_photo_path)
+                    # Resize image if too large
+                    max_width = 1200
+                    if img.width > max_width:
+                        new_height = int((max_width / img.width) * img.height)
+                        img = img.resize((max_width, new_height), Image.Resampling.LANCZOS)
+                    
                     st.image(
-                        str(current_photo_path),
-                        use_container_width=True,
+                        img,
+                        width=450,
                         caption=f"Photo {current_photo_index + 1} of {max_photo_index + 1}"
                     )
+                except Exception as e:
+                    st.error(f"⚠️ Error loading image: {e}")
             else:
                 st.error(f"⚠️ Image not found: {current_photo_path.name}")
                 st.info("Please ensure images are in the correct folder with matching filenames.")
