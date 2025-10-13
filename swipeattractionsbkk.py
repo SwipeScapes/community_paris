@@ -9,7 +9,7 @@ BANGKOK = "Bangkok"
 
 # --- Path to local images folder ---
 # Update this path to match your local folder structure
-IMAGES_PATH = Path("images/bkk")  # e.g., "images/bangkok" or "/Users/yourname/Desktop/bangkok_images"
+IMAGES_PATH = Path("images")  # e.g., "images/bangkok" or "/Users/yourname/Desktop/bangkok_images"
 
 # --- Attraction Data with local image paths ---
 destinations = {
