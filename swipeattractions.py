@@ -119,11 +119,11 @@ else:
             if current_photo_path.exists():
                 try:
                     img = Image.open(current_photo_path)
-                    # Resize image if too large (helps with Streamlit Cloud performance)
-                    max_width = 1200
+                    # Resize image to larger display size
+                    max_width = 2000
                     if img.width > max_width:
                         new_height = int((max_width / img.width) * img.height)
-                        img = img.resize((max_width, new_height))
+                        img = img.resize((max_width, new_height), Image.Resampling.LANCZOS)
 
                     st.image(
                         img,
