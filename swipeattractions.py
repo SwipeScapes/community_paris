@@ -140,7 +140,6 @@ else:
                     st.image(
                         str(current_photo_path),
                         use_container_width=True,
-                        use_column_width=True,
                         caption=f"Photo {current_photo_index + 1} of {max_photo_index + 1}"
                     )
             else:
