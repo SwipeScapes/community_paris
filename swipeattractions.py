@@ -127,7 +127,7 @@ else:
 
                     st.image(
                         img,
-                        width=900,
+                        width=450,
                         caption=f"📸 Photo {current_photo_index + 1} of {max_photo_index + 1}",
                     )
                 except Exception as e:
