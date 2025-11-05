@@ -328,7 +328,7 @@ st.markdown("""
 st.markdown(
     """
     <div style="text-align:center; margin-top:30px; margin-bottom: 20px;">
-        <a href="https://swipescapes.github.io/swipescapes/" target="_blank">
+        <a href=" https://swipescapes.com/#page-3" target="_blank">
             <button style="
                 background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
                 color:white;
